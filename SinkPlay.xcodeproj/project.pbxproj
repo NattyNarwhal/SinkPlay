@@ -11,6 +11,9 @@
 		3E5C41C5295B85EF009B9699 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5C41C4295B85EF009B9699 /* ContentView.swift */; };
 		3E5C41C7295B85F0009B9699 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E5C41C6295B85F0009B9699 /* Assets.xcassets */; };
 		3E5C41CB295B85F0009B9699 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E5C41CA295B85F0009B9699 /* Preview Assets.xcassets */; };
+		3E5C41D3295B8683009B9699 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E5C41D2295B8683009B9699 /* AVKit.framework */; };
+		3E5C41D5295CD60F009B9699 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5C41D4295CD60F009B9699 /* AppState.swift */; };
+		3E5C41D8295F3E6B009B9699 /* NIO in Frameworks */ = {isa = PBXBuildFile; productRef = 3E5C41D7295F3E6B009B9699 /* NIO */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +23,8 @@
 		3E5C41C6295B85F0009B9699 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3E5C41C8295B85F0009B9699 /* SinkPlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SinkPlay.entitlements; sourceTree = "<group>"; };
 		3E5C41CA295B85F0009B9699 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		3E5C41D2295B8683009B9699 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.1.sdk/System/Library/Frameworks/AVKit.framework; sourceTree = DEVELOPER_DIR; };
+		3E5C41D4295CD60F009B9699 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -27,6 +32,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E5C41D3295B8683009B9699 /* AVKit.framework in Frameworks */,
+				3E5C41D8295F3E6B009B9699 /* NIO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,6 +45,7 @@
 			children = (
 				3E5C41C1295B85EF009B9699 /* SinkPlay */,
 				3E5C41C0295B85EF009B9699 /* Products */,
+				3E5C41D1295B8683009B9699 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -57,6 +65,7 @@
 				3E5C41C6295B85F0009B9699 /* Assets.xcassets */,
 				3E5C41C8295B85F0009B9699 /* SinkPlay.entitlements */,
 				3E5C41C9295B85F0009B9699 /* Preview Content */,
+				3E5C41D4295CD60F009B9699 /* AppState.swift */,
 			);
 			path = SinkPlay;
 			sourceTree = "<group>";
@@ -67,6 +76,14 @@
 				3E5C41CA295B85F0009B9699 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3E5C41D1295B8683009B9699 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3E5C41D2295B8683009B9699 /* AVKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -85,6 +102,9 @@
 			dependencies = (
 			);
 			name = SinkPlay;
+			packageProductDependencies = (
+				3E5C41D7295F3E6B009B9699 /* NIO */,
+			);
 			productName = SinkPlay;
 			productReference = 3E5C41BF295B85EF009B9699 /* SinkPlay.app */;
 			productType = "com.apple.product-type.application";
@@ -113,6 +133,9 @@
 				Base,
 			);
 			mainGroup = 3E5C41B6295B85EF009B9699;
+			packageReferences = (
+				3E5C41D6295F3E6B009B9699 /* XCRemoteSwiftPackageReference "swift-nio" */,
+			);
 			productRefGroup = 3E5C41C0295B85EF009B9699 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -139,6 +162,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E5C41D5295CD60F009B9699 /* AppState.swift in Sources */,
 				3E5C41C5295B85EF009B9699 /* ContentView.swift in Sources */,
 				3E5C41C3295B85EF009B9699 /* SinkPlayApp.swift in Sources */,
 			);
@@ -269,6 +293,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -307,6 +332,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -354,6 +380,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3E5C41D6295F3E6B009B9699 /* XCRemoteSwiftPackageReference "swift-nio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3E5C41D7295F3E6B009B9699 /* NIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E5C41D6295F3E6B009B9699 /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIO;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3E5C41B7295B85EF009B9699 /* Project object */;
 }
