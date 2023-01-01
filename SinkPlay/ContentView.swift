@@ -13,7 +13,7 @@ struct ContentView: View {
     
     // These are used just for the connection sheet
     @State var server = ""
-    @State var port: Int32 = 8999
+    @State var port: Int = 8999
     @State var nick = ""
     @State var pass = ""
     @State var room = ""
@@ -54,9 +54,9 @@ struct ContentView: View {
                     Spacer()
                     HStack{
                         Button("Connect") {
-                            appState.connect(server: server, port: port, nick: nick, room: room, pass: pass)
-                            
-                            showConnectionSheet = false
+                            if appState.connect(server: server, port: port, nick: nick, room: room, pass: pass) {
+                                showConnectionSheet = false
+                            }
                         }
                         .keyboardShortcut(.return)
                         Button("Cancel") {

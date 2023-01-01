@@ -14,6 +14,7 @@
 		3E5C41D3295B8683009B9699 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E5C41D2295B8683009B9699 /* AVKit.framework */; };
 		3E5C41D5295CD60F009B9699 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5C41D4295CD60F009B9699 /* AppState.swift */; };
 		3E5C41D8295F3E6B009B9699 /* NIO in Frameworks */ = {isa = PBXBuildFile; productRef = 3E5C41D7295F3E6B009B9699 /* NIO */; };
+		3E5C41DA2962261D009B9699 /* SyncPlayHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5C41D92962261D009B9699 /* SyncPlayHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +26,7 @@
 		3E5C41CA295B85F0009B9699 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3E5C41D2295B8683009B9699 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.1.sdk/System/Library/Frameworks/AVKit.framework; sourceTree = DEVELOPER_DIR; };
 		3E5C41D4295CD60F009B9699 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		3E5C41D92962261D009B9699 /* SyncPlayHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPlayHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +68,7 @@
 				3E5C41C8295B85F0009B9699 /* SinkPlay.entitlements */,
 				3E5C41C9295B85F0009B9699 /* Preview Content */,
 				3E5C41D4295CD60F009B9699 /* AppState.swift */,
+				3E5C41D92962261D009B9699 /* SyncPlayHandler.swift */,
 			);
 			path = SinkPlay;
 			sourceTree = "<group>";
@@ -163,6 +166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E5C41D5295CD60F009B9699 /* AppState.swift in Sources */,
+				3E5C41DA2962261D009B9699 /* SyncPlayHandler.swift in Sources */,
 				3E5C41C5295B85EF009B9699 /* ContentView.swift in Sources */,
 				3E5C41C3295B85EF009B9699 /* SinkPlayApp.swift in Sources */,
 			);
