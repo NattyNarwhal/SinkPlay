@@ -19,12 +19,44 @@ class SyncPlayHandler : ChannelInboundHandler {
         self.appState = appState
     }
     
+    func writeDictionary(dict: Dictionary<String, Any>, context: ChannelHandlerContext) {
+        // XXX: So much conversion
+        if let asJson = try? JSONSerialization.data(withJSONObject: dict),
+           let asJsonString = String(data: asJson, encoding: .utf8) {
+            print("C->S: ", asJsonString)
+            var buffer = context.channel.allocator.buffer(capacity: asJson.count + 2)
+            buffer.writeString(asJsonString + "\r\n")
+            context.writeAndFlush(wrapOutboundOut(buffer), promise: nil)
+        }
+    }
+    
     func channelActive(context: ChannelHandlerContext) {
-        let message = "{\"Hello\": {\"username\": \"\(appState.nick!)\", \"room\": {\"name\": \"\(appState.room!)\"}, \"version\": \"1.7.0\"}}\r\n"
+        /*
+        let message = "{\"Hello\": {\"username\": \"\(appState.nick!)\", \"room\": {\"name\": \"\(appState.room!)\"}, \"version\": \"1.2.255\", \"realversion\": \"1.7.0\"}}\r\n"
         var buffer = context.channel.allocator.buffer(capacity: message.utf8.count)
         buffer.writeString(message)
         print("C->S: ", message)
         context.writeAndFlush(wrapOutboundOut(buffer), promise: nil)
+        */
+        // the official docs are misleading in what needs to be in a hello packet
+        let helloMessage = [
+            "Hello": [
+                "username": appState.nick!,
+                "room": ["name": appState.room],
+                "version": "1.2.255", // ?
+                "realversion": "1.7.0", // what version of syncplay we pretend to be
+                "features": [
+                    "sharedPlaylists": true,
+                    "chat": true,
+                    "uiMode": "GUI",
+                    "featureList": true,
+                    "readiness": true,
+                    "managedRooms": true,
+                    "persistentRooms": true
+                ]
+            ]
+        ]
+        writeDictionary(dict: helloMessage, context: context)
     }
     
     func channelInactive(context: ChannelHandlerContext) {
@@ -41,7 +73,7 @@ class SyncPlayHandler : ChannelInboundHandler {
             // XXX: We should switch the order here, so we get Data and convert to String
             // Or add JSON decode to another pipeline step
             if let data = received.data(using: .utf8) {
-                self.handleJsonPayload(data: data)
+                self.handleJsonPayload(data: data, context: context)
             }
         }
     }
@@ -51,11 +83,11 @@ class SyncPlayHandler : ChannelInboundHandler {
         context.flush()
     }
     
-    func errorCaught(ctx: ChannelHandlerContext, error: Error) {
+    func errorCaught(context: ChannelHandlerContext, error: Error) {
         // XXX: iOS
         NSApplication.shared.presentError(error)
         print("Connection Error: ", error)
-        ctx.close(promise: nil)
+        context.close(promise: nil)
     }
     
     // Protocol handling
@@ -104,20 +136,31 @@ class SyncPlayHandler : ChannelInboundHandler {
         }
     }
     
-    private func handleMessageState(state: [String: Any]) {
+    private func handleMessageState(state: [String: Any], context: ChannelHandlerContext) {
         for (key, value) in state {
             switch (key) {
             case "ping":
+                if let pingState = value as? [String: Any] {
+                    let latencyCalculation = pingState["latencyCalculation"] as! Float64
+                    if let clientLatencyCalculation = pingState["clientLatencyCalculation"] as! Int? {
+                        let serverRtt = pingState["serverRtt"] as! Int
+                        
+                    }
+                }
                 print("Ping")
             case "playstate":
+                // doSeek: Bool, setBy: User, position: Seconds, paused: Bool
                 print("State")
             default:
                 print("Unknown State key ", value)
             }
         }
+        // Write a state packet back, so the connection stays alive
+        var replyState: [String: Any] = Dictionary()
+        writeDictionary(dict: ["State": replyState], context: context)
     }
     
-    private func handleJsonPayload(data: Data) {
+    private func handleJsonPayload(data: Data, context: ChannelHandlerContext) {
         if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
             switch (json.keys.first) {
             case "Hello":
@@ -126,11 +169,18 @@ class SyncPlayHandler : ChannelInboundHandler {
                 }
             case "State":
                 if let state = json.values.first! as? [String: Any] {
-                    handleMessageState(state: state)
+                    handleMessageState(state: state, context: context)
                 }
             case "Set":
                 if let set = json.values.first! as? [String: Any] {
                     handleMessageSet(set: set)
+                }
+            case "Error":
+                // XXX: Display it
+                if let error = json["Error"] as? [String: String], let message = error["message"] {
+                    print("SyncPlay Protocol Error: ", message)
+                } else {
+                    print("Failed to decode error: ", data)
                 }
             case .none:
                 print("Uh-oh, no key in the payload?")
