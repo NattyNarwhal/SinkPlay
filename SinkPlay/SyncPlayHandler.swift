@@ -137,15 +137,27 @@ class SyncPlayHandler : ChannelInboundHandler {
     }
     
     private func handleMessageState(state: [String: Any], context: ChannelHandlerContext) {
+        var replyState: [String: Any] = [
+            "playState": [
+                "position": 0.0,
+                "paused": true
+            ]
+        ]
         for (key, value) in state {
             switch (key) {
             case "ping":
                 if let pingState = value as? [String: Any] {
                     let latencyCalculation = pingState["latencyCalculation"] as! Float64
-                    if let clientLatencyCalculation = pingState["clientLatencyCalculation"] as! Int? {
-                        let serverRtt = pingState["serverRtt"] as! Int
-                        
-                    }
+                    let serverRtt = pingState["serverRtt"] as! Float64
+                    // SyncPlay's PingService does more advanced calculation based on average RTTs
+                    let localTimestamp = NSDate().timeIntervalSince1970
+                    print("Local timestamp: ", localTimestamp)
+                    let ourClientLatencyCalculation = localTimestamp - latencyCalculation
+                    replyState["ping"] = [
+                        "latencyCalculation": latencyCalculation,
+                        "clientLatencyCalculation": ourClientLatencyCalculation,
+                        "clientRtt": 0
+                    ]
                 }
                 print("Ping")
             case "playstate":
@@ -156,7 +168,6 @@ class SyncPlayHandler : ChannelInboundHandler {
             }
         }
         // Write a state packet back, so the connection stays alive
-        var replyState: [String: Any] = Dictionary()
         writeDictionary(dict: ["State": replyState], context: context)
     }
     
