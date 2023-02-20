@@ -31,13 +31,6 @@ class SyncPlayHandler : ChannelInboundHandler {
     }
     
     func channelActive(context: ChannelHandlerContext) {
-        /*
-        let message = "{\"Hello\": {\"username\": \"\(appState.nick!)\", \"room\": {\"name\": \"\(appState.room!)\"}, \"version\": \"1.2.255\", \"realversion\": \"1.7.0\"}}\r\n"
-        var buffer = context.channel.allocator.buffer(capacity: message.utf8.count)
-        buffer.writeString(message)
-        print("C->S: ", message)
-        context.writeAndFlush(wrapOutboundOut(buffer), promise: nil)
-        */
         // the official docs are misleading in what needs to be in a hello packet
         let helloMessage = [
             "Hello": [
@@ -148,10 +141,10 @@ class SyncPlayHandler : ChannelInboundHandler {
             case "ping":
                 if let pingState = value as? [String: Any] {
                     let latencyCalculation = pingState["latencyCalculation"] as! Float64
-                    let serverRtt = pingState["serverRtt"] as! Float64
+                    //let serverRtt = pingState["serverRtt"] as! Float64
                     // SyncPlay's PingService does more advanced calculation based on average RTTs
                     let localTimestamp = NSDate().timeIntervalSince1970
-                    print("Local timestamp: ", localTimestamp)
+                    //print("Local timestamp: ", localTimestamp)
                     let ourClientLatencyCalculation = localTimestamp - latencyCalculation
                     replyState["ping"] = [
                         "latencyCalculation": latencyCalculation,
@@ -171,6 +164,14 @@ class SyncPlayHandler : ChannelInboundHandler {
         writeDictionary(dict: ["State": replyState], context: context)
     }
     
+    private func handleMessageChat(chat: [String: Any]) {
+        if let message = chat["message"]! as? String,
+           let username = chat["username"]! as? String {
+            // TODO: Show in UI
+            print(username, " said ", message)
+        }
+    }
+    
     private func handleJsonPayload(data: Data, context: ChannelHandlerContext) {
         if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
             switch (json.keys.first) {
@@ -185,6 +186,10 @@ class SyncPlayHandler : ChannelInboundHandler {
             case "Set":
                 if let set = json.values.first! as? [String: Any] {
                     handleMessageSet(set: set)
+                }
+            case "Chat":
+                if let chat = json.values.first! as? [String: Any] {
+                    handleMessageChat(chat: chat)
                 }
             case "Error":
                 // XXX: Display it
