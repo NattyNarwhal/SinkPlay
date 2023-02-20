@@ -124,7 +124,7 @@ class SyncPlayHandler : ChannelInboundHandler {
         for (key, value) in set {
             switch (key) {
             default:
-                print("Unknown Set key ", value)
+                print("Unknown Set key ", key, "=", value)
             }
         }
     }
@@ -155,9 +155,12 @@ class SyncPlayHandler : ChannelInboundHandler {
                 print("Ping")
             case "playstate":
                 // doSeek: Bool, setBy: User, position: Seconds, paused: Bool
-                print("State")
+                print("PlayState")
+            case "ignoringOnTheFly":
+                // server and client, count of some kind of readiness state?
+                print("On the fly")
             default:
-                print("Unknown State key ", value)
+                print("Unknown State key ", key, "=", value)
             }
         }
         // Write a state packet back, so the connection stays alive
