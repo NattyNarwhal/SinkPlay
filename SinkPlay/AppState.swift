@@ -9,6 +9,25 @@ import Foundation
 import SwiftUI
 import NIO
 
+class UserState : ObservableObject {
+    @Published var name: String
+    // probably the wrong topology
+    @Published var room: String
+    @Published var ready: Bool
+    @Published var paused: Bool
+    @Published var fileName: String
+    @Published var filePosition: TimeInterval
+    
+    init(name: String, room: String, ready: Bool, paused: Bool, fileName: String, filePosition: TimeInterval) {
+        self.name = name
+        self.room = room
+        self.ready = ready
+        self.paused = paused
+        self.fileName = fileName
+        self.filePosition = filePosition
+    }
+}
+
 class AppState : ObservableObject {
     // variables and such
     @Published var currentURL: URL?
@@ -18,6 +37,8 @@ class AppState : ObservableObject {
     @Published var nick: String?
     @Published var room: String?
     @Published var pass: String?
+    
+    @Published var users: [UserState] = []
     
     // TCP sludge
     private var chan: Channel?
@@ -71,5 +92,12 @@ class AppState : ObservableObject {
             self.chan = nil
         }
         // XXX: inform UI of this
+    }
+    
+    // Getting events from the handler
+    func setReady(username: String, ready: Bool) {
+        users.first { user in
+            user.name == username
+        }?.ready = ready
     }
 }

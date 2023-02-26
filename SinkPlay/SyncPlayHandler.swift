@@ -120,9 +120,45 @@ class SyncPlayHandler : ChannelInboundHandler {
         }
     }
     
+    private func handleMessageSetUser(username: String, userData: [String: Any]) {
+        for (key, value) in userData {
+            // Map of username -> object representing state change
+            // Either "event" with joined/left, or "file"
+            // an event of joined will also declare the version and featureset of the client
+            switch (key) {
+            case "room":
+                // this is always a constant of it though, we should fetch it earlier
+                break
+            default:
+                print("Unknown Set[User] for user ", username, ", key ", key, "=", value)
+            }
+        }
+    }
+    
     private func handleMessageSet(set: [String: Any]) {
         for (key, value) in set {
             switch (key) {
+            //case "playlistChange":
+            //case "playlistIndex":
+            case "ready":
+                // username, manuallyInitiated, isReady
+                // somehow isReady can either be 0, 1, or "<null>" - wtf
+                var ready = false
+                if let readySet = value as? [String: Any],
+                   let username = readySet["username"] as? String {
+                    if let readyInObject = readySet["isReady"] as? Int {
+                        ready = readyInObject == 1
+                    }
+                    DispatchQueue.main.async {
+                        self.appState.setReady(username: username, ready: ready)
+                    }
+                }
+            case "user":
+                if let users = value as? [String: [String: Any]] {
+                    for (username, userData) in users {
+                        handleMessageSetUser(username: username, userData: userData)
+                    }
+                }
             default:
                 print("Unknown Set key ", key, "=", value)
             }
