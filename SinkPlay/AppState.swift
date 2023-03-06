@@ -9,22 +9,30 @@ import Foundation
 import SwiftUI
 import NIO
 
+class FileState : ObservableObject {
+    @Published var name: String
+    @Published var duration: TimeInterval
+    @Published var size: UInt64
+    
+    init(name: String, duration: TimeInterval, size: UInt64) {
+        self.name = name
+        self.duration = duration
+        self.size = size
+    }
+}
+
 class UserState : ObservableObject {
     @Published var name: String
     // probably the wrong topology
-    @Published var room: String
+    @Published var room: String?
     @Published var ready: Bool
-    @Published var paused: Bool
-    @Published var fileName: String
-    @Published var filePosition: TimeInterval
+    @Published var file: FileState?
     
-    init(name: String, room: String, ready: Bool, paused: Bool, fileName: String, filePosition: TimeInterval) {
+    init(name: String, room: String?, ready: Bool, file: FileState?) {
         self.name = name
         self.room = room
         self.ready = ready
-        self.paused = paused
-        self.fileName = fileName
-        self.filePosition = filePosition
+        self.file = file
     }
 }
 
@@ -39,6 +47,8 @@ class AppState : ObservableObject {
     @Published var pass: String?
     
     @Published var users: [UserState] = []
+    @Published var filePosition: TimeInterval = 0
+    // paused?
     
     // TCP sludge
     private var chan: Channel?
@@ -99,5 +109,18 @@ class AppState : ObservableObject {
         users.first { user in
             user.name == username
         }?.ready = ready
+    }
+    
+    func userJoined(newUser: UserState) {
+        users.removeAll(where: { user in
+            user.name == newUser.name
+        })
+        users.append(newUser)
+    }
+    
+    func userLeft(username: String) {
+        users.removeAll(where: { user in
+            user.name == username
+        })
     }
 }
