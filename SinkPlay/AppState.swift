@@ -21,7 +21,9 @@ class FileState : ObservableObject {
     }
 }
 
-class UserState : ObservableObject {
+class UserState : ObservableObject, Identifiable {
+    let id = UUID()
+    
     @Published var name: String
     // probably the wrong topology
     @Published var room: String?
@@ -101,10 +103,16 @@ class AppState : ObservableObject {
             chan.close(mode: .all, promise: nil)
             self.chan = nil
         }
+        users.removeAll()
         // XXX: inform UI of this
     }
     
     // Getting events from the handler
+    func presentError(_ error: Error) {
+        // XXX: iOS
+        NSApplication.shared.presentError(error)
+    }
+    
     func setReady(username: String, ready: Bool) {
         users.first { user in
             user.name == username
@@ -122,5 +130,17 @@ class AppState : ObservableObject {
         users.removeAll(where: { user in
             user.name == username
         })
+    }
+    
+    func userChangedFile(username: String, file: FileState) {
+        users.first { user in
+            user.name == username
+        }?.file = file
+    }
+    
+    func userChangedRoom(username: String, room: String) {
+        users.first { user in
+            user.name == username
+        }?.room = room
     }
 }

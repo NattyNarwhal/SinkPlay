@@ -9,161 +9,6 @@ import Foundation
 import NIO
 import SwiftUI
 
-enum ProtocolResponse: Codable {
-    case error(message: String)
-    case chat(message: String, username: String)
-    // annoying these optional values could be an enum of their own... need to figure out best way for that
-    // other values: controllerAuth, newControlledRoom, room
-    case set(playlistChange: PlaylistChange?, playlistIndex: PlaylistIndex?, ready: Ready?, user: [String: User]?)
-    case state(ping: Ping, playstate: PlayState, ignoringOnTheFly: IgnoringOnTheFly?)
-    case hello(username: String, room: Room, version: String, realversion: String, features: [String: Feature], motd: String)
-    
-    enum Feature: Codable {
-        case int(Int)
-        case bool(Bool)
-        
-        init(from decoder: Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let bool = try? container.decode(Bool.self) {
-                self = .bool(bool)
-            } else if let int = try? container.decode(Int.self) {
-                self = .int(int)
-            } else {
-                throw DecodingError.typeMismatch(Feature.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for Feature"))
-            }
-        }
-    }
-    
-    struct Room: Codable {
-        let name: String
-    }
-    
-    struct Ping: Codable {
-        let latencyCalculation: Double
-        let clientLatencyCalculation: Double?
-        let serverRtt: Double
-    }
-    
-    struct PlayState: Codable {
-        let position: Double
-        let paused: Bool
-        let doSeek: Bool
-        let setBy: String?
-    }
-    
-    struct IgnoringOnTheFly: Codable {
-        let server: Int?
-    }
-    
-    struct File: Codable {
-        // only some of these may be optionals?
-        let name: String
-        let duration: String // convert to a double later
-        let size: UInt64
-    }
-    
-    struct User: Codable {
-        let room: Room
-        let event: Event?
-        let file: File?
-        
-        /*
-        struct Event: Codable {
-            let joined: Bool?
-            let features: [String: Feature]?
-            let version: String?
-            
-            let left: Bool?
-        }
-         */
-        enum Event: Codable {
-            case joined//(version: String?, features: [String: Feature]?)
-            case left
-            
-            enum CodingKeys: String, CodingKey {
-                // TODO: How do we put the keys needed for version/features here?
-                case joined, left//, version, features
-            }
-            
-            init(from decoder: Decoder) throws {
-                let container = try decoder.container(keyedBy: CodingKeys.self)
-                if (try? container.decode(Bool.self, forKey: .joined)) == true {
-                    //let version = try? container.decode(String.self, forKey: .version)
-                    //self = .joined(version: "", features: [:])
-                    self = .joined
-                } else if (try? container.decode(Bool.self, forKey: .left)) == true {
-                    self = .left
-                } else {
-                    throw DecodingError.typeMismatch(Event.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for Event"))
-                }
-            }
-        }
-    }
-    
-    struct PlaylistChange: Codable {
-        let user: String?
-        let files: [String] // XXX
-    }
-    
-    struct PlaylistIndex: Codable {
-        let user: String?
-        let index: Int? // another dumb case
-        
-        enum CodingKeys: String, CodingKey {
-            case user, index
-        }
-        
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.user = try? container.decode(String.self, forKey: .user)
-            if let x = try? container.decode(Int.self, forKey: .index) {
-                self.index = x
-            } else if (try? container.decode(String.self, forKey: .index)) != nil {
-                self.index = nil // as the stirng indicates null somehow
-            } else if try container.decodeNil(forKey: .index) {
-                self.index = nil
-            } else {
-                throw DecodingError.typeMismatch(PlaylistIndex.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for PlaylistIndex.index"))
-            }
-        }
-    }
-    
-    struct Ready: Codable {
-        let isReady: Bool // either "<null>" or 0/1. awful, but we can fix that.
-        let manuallyInitiated: Bool?
-        let username: String
-        
-        enum CodingKeys: String, CodingKey {
-            case isReady, manuallyInitiated, username
-        }
-        
-        // manual because of isReady...
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.username = try! container.decode(String.self, forKey: .username)
-            self.manuallyInitiated = try? container.decode(Bool.self, forKey: .manuallyInitiated)
-            // now handle either case
-            if let x = try? container.decode(Bool.self, forKey: .isReady) {
-                self.isReady = x
-            } else if (try? container.decode(String.self, forKey: .isReady)) != nil {
-                self.isReady = false // as the string indicates null
-            } else if try container.decodeNil(forKey: .isReady) {
-                self.isReady = false
-            } else {
-                throw DecodingError.typeMismatch(Ready.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for Ready.isReady"))
-            }
-        }
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case error = "Error"
-        case chat = "Chat"
-        case hello = "Hello"
-        case set = "Set"
-        case state = "State"
-    }
-}
-
 class SyncPlayHandler : ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
     typealias OutboundOut = ByteBuffer
@@ -176,7 +21,7 @@ class SyncPlayHandler : ChannelInboundHandler {
         self.appState = appState
     }
     
-    func writeDictionary(dict: Dictionary<String, Any>, context: ChannelHandlerContext) {
+    func writeDictionary(dict: Dictionary<String, Any?>, context: ChannelHandlerContext) {
         // XXX: So much conversion
         if let asJson = try? JSONSerialization.data(withJSONObject: dict),
            let asJsonString = String(data: asJson, encoding: .utf8) {
@@ -187,7 +32,7 @@ class SyncPlayHandler : ChannelInboundHandler {
         }
     }
     
-    func channelActive(context: ChannelHandlerContext) {
+    private func sendHello(context: ChannelHandlerContext) {
         // the official docs are misleading in what needs to be in a hello packet
         let helloMessage = [
             "Hello": [
@@ -207,6 +52,27 @@ class SyncPlayHandler : ChannelInboundHandler {
             ]
         ]
         writeDictionary(dict: helloMessage, context: context)
+    }
+    
+    private func sendSetReady(context: ChannelHandlerContext) {
+        let readyMessage = [
+            "Set": [
+                "ready": [
+                    "isReady": false, // TODO: from appState
+                    "manuallyInitiated": false
+                ]
+            ]
+        ]
+        writeDictionary(dict: readyMessage, context: context)
+    }
+    
+    private func sendList(context: ChannelHandlerContext) {
+        let listMessage: [String: Any?] = ["List": nil]
+        writeDictionary(dict: listMessage, context: context)
+    }
+    
+    func channelActive(context: ChannelHandlerContext) {
+        sendHello(context: context)
     }
     
     func channelInactive(context: ChannelHandlerContext) {
@@ -233,9 +99,12 @@ class SyncPlayHandler : ChannelInboundHandler {
         context.flush()
     }
     
+    // TODO: How do we handle temporary disconnects?
+    // Only leave for ourselves is an explicit quit from server, IIRC?
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        // XXX: iOS
-        NSApplication.shared.presentError(error)
+        DispatchQueue.main.async {
+            self.appState.presentError(error)
+        }
         print("Connection Error: ", error)
         context.close(promise: nil)
     }
@@ -250,8 +119,10 @@ class SyncPlayHandler : ChannelInboundHandler {
         if let event = userData.event {
             switch (event) {
             case .joined:
+                // This is not the only place a user could be created, see List
                 DispatchQueue.main.async {
-                    //self.appState.userJoined(newUser: )
+                    let newUser = UserState(name: username, room: userData.room.name, ready: false, file: file)
+                    self.appState.userJoined(newUser: newUser)
                 }
             case .left:
                 DispatchQueue.main.async {
@@ -260,8 +131,30 @@ class SyncPlayHandler : ChannelInboundHandler {
             }
             return
         }
-        // Now just modify existing state
-        
+        // Now just modify existing state (only file because ready is set elsewhere)
+        // TODO: Does this make sense if the user removes a file? Can they do that?
+        if let file = file {
+            DispatchQueue.main.async {
+                self.appState.userChangedFile(username: username, file: file)
+            }
+        }
+        // this may be a nop most of the time, but SP client lets you change rooms on the fly
+        DispatchQueue.main.async {
+            self.appState.userChangedRoom(username: username, room: userData.room.name)
+        }
+    }
+    
+    private func handleMessageListUser(username: String, room: String, userData: ProtocolResponse.ListUser) {
+        // Maybe not best approach to treat like a join
+        var file: FileState? = nil
+        if let fileInfo = userData.file {
+            let duration = Double(fileInfo.duration)!
+            file = FileState(name: fileInfo.name, duration: duration, size: fileInfo.size)
+        }
+        DispatchQueue.main.async {
+            let newUser = UserState(name: username, room: room, ready: userData.isReady, file: file)
+            self.appState.userJoined(newUser: newUser)
+        }
     }
     
     private func handleMessageSetReady(ready: ProtocolResponse.Ready) {
@@ -306,60 +199,47 @@ class SyncPlayHandler : ChannelInboundHandler {
             case .error(let message):
                 // TODO: Display it
                 print("SyncPlay Protocol Error: ", message)
-            case .chat(message: let message, username: let username):
+            case .chat(let chat):
                 // TODO: Show in UI
-                print(username, " said ", message)
-            case .set(playlistChange: _, playlistIndex: _, ready: let ready, user: let user):
-                if let user = user {
+                print(chat.username, " said ", chat.message)
+            case .set(let set):
+                if let user = set.user {
                     handleMessageSetUsers(users: user)
                 }
-                if let ready = ready {
+                if let ready = set.ready {
                     handleMessageSetReady(ready: ready)
                 }
-            case .hello(username: let username, room: let room, version: let version, realversion: let realversion, features: let features, motd: let motd):
+            case .hello(let hello):
                 // username
                 DispatchQueue.main.async {
-                    self.appState.nick = username
+                    self.appState.nick = hello.username
                 }
                 // versions
-                print("Version ", version, ", Real Version", realversion)
+                print("Version ", hello.version, ", Real Version", hello.realversion)
                 // room
-                print("Room:", room.name)
+                print("Room:", hello.room.name)
                 // motd
-                print("MOTD:", motd)
+                print("MOTD:", hello.motd)
                 // features
-                for (fKey, fValue) in features {
+                for (fKey, fValue) in hello.features {
                     print("Feature", fKey, "=", fValue)
                 }
-            case .state(ping: let ping, playstate: let playstate, ignoringOnTheFly: _):
-                handleMessageState(ping: ping, playstate: playstate, context: context)
+                // Once we get a hello, we should tell the server about our readiness and ask for a list
+                // world's worst state machine here
+                sendSetReady(context: context)
+                sendList(context: context)
+            case .state(let state):
+                handleMessageState(ping: state.ping, playstate: state.playstate, context: context)
+            case .list(let rooms):
+                for (room, users) in rooms {
+                    for (user, userData) in users {
+                        handleMessageListUser(username: user, room: room, userData: userData)
+                    }
+                }
             }
         } catch {
             dump(error)
         }
-    }
-}
-
-// SyncPlay uses JSON framing, but those frames are separated by lines
-// It's not explicit, but you can tell because it uses Twisted's LineReceiver
-// from https://github.com/apple/swift-nio/blob/main/Sources/NIOChatServer/main.swift
-private let newLine = "\n".utf8.first!
-
-/// Very simple example codec which will buffer inbound data until a `\n` was found.
-final class LineDelimiterCodec: ByteToMessageDecoder {
-    public typealias InboundIn = ByteBuffer
-    public typealias InboundOut = ByteBuffer
-
-    public var cumulationBuffer: ByteBuffer?
-
-    public func decode(context: ChannelHandlerContext, buffer: inout ByteBuffer) throws -> DecodingState {
-        let readable = buffer.withUnsafeReadableBytes { $0.firstIndex(of: newLine) }
-        if let r = readable {
-            let readBytes = buffer.readSlice(length: r + 1)!
-            context.fireChannelRead(self.wrapInboundOut(readBytes))
-            return .continue
-        }
-        return .needMoreData
     }
 }
 

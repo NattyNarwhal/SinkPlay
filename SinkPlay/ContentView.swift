@@ -24,8 +24,11 @@ struct ContentView: View {
     
     @State var player = AVPlayer()
     
+    // For chat and users
+    @State var showInspector = false
+    
     var body: some View {
-        VStack {
+        HSplitView {
             VideoPlayer(player: player)
                 .onReceive(appState.$currentURL) { (newUrl) in
                     if let url = newUrl {
@@ -39,7 +42,23 @@ struct ContentView: View {
                 .onDisappear {
                     uninstallObservers()
                 }
-        }//.edgesIgnoringSafeArea(.all)
+            if showInspector {
+                // TODO: Make full-height
+                VStack {
+                    Text("Users:")
+                    List(appState.users) { user in
+                        Text(user.name)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .toolbar {
+            Button(action: { showInspector.toggle() }) {
+                Label("Toggle Inspector", systemImage: "sidebar.right")
+            }
+        }
+        //.edgesIgnoringSafeArea(.all)
         .sheet(isPresented: $showConnectionSheet, content: {
             // XXX: This is going to be pretty ugly on iOS. Makes sense to refactor into separate view.
             Spacer()

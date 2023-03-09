@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3E0DAD5629BA6F2300D895E2 /* ProtocolResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E0DAD5529BA6F2300D895E2 /* ProtocolResponse.swift */; };
+		3E0DAD5829BA6FE700D895E2 /* LineDelimiterCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E0DAD5729BA6FE700D895E2 /* LineDelimiterCodec.swift */; };
 		3E5C41C3295B85EF009B9699 /* SinkPlayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5C41C2295B85EF009B9699 /* SinkPlayApp.swift */; };
 		3E5C41C5295B85EF009B9699 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5C41C4295B85EF009B9699 /* ContentView.swift */; };
 		3E5C41C7295B85F0009B9699 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E5C41C6295B85F0009B9699 /* Assets.xcassets */; };
@@ -18,6 +20,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3E0DAD5529BA6F2300D895E2 /* ProtocolResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolResponse.swift; sourceTree = "<group>"; };
+		3E0DAD5729BA6FE700D895E2 /* LineDelimiterCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineDelimiterCodec.swift; sourceTree = "<group>"; };
 		3E5C41BF295B85EF009B9699 /* SinkPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SinkPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E5C41C2295B85EF009B9699 /* SinkPlayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SinkPlayApp.swift; sourceTree = "<group>"; };
 		3E5C41C4295B85EF009B9699 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -69,6 +73,8 @@
 				3E5C41C9295B85F0009B9699 /* Preview Content */,
 				3E5C41D4295CD60F009B9699 /* AppState.swift */,
 				3E5C41D92962261D009B9699 /* SyncPlayHandler.swift */,
+				3E0DAD5529BA6F2300D895E2 /* ProtocolResponse.swift */,
+				3E0DAD5729BA6FE700D895E2 /* LineDelimiterCodec.swift */,
 			);
 			path = SinkPlay;
 			sourceTree = "<group>";
@@ -165,9 +171,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E0DAD5629BA6F2300D895E2 /* ProtocolResponse.swift in Sources */,
 				3E5C41D5295CD60F009B9699 /* AppState.swift in Sources */,
 				3E5C41DA2962261D009B9699 /* SyncPlayHandler.swift in Sources */,
 				3E5C41C5295B85EF009B9699 /* ContentView.swift in Sources */,
+				3E0DAD5829BA6FE700D895E2 /* LineDelimiterCodec.swift in Sources */,
 				3E5C41C3295B85EF009B9699 /* SinkPlayApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
