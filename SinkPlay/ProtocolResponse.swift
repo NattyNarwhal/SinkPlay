@@ -105,7 +105,7 @@ enum ProtocolResponse: Codable {
     struct PlayState: Codable {
         let position: Double
         let paused: Bool
-        let doSeek: Bool
+        let doSeek: Bool? // should really be Bool
         let setBy: String?
     }
     
