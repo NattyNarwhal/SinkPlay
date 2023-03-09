@@ -113,8 +113,7 @@ class SyncPlayHandler : ChannelInboundHandler {
     private func handleMessageSetUser(username: String, userData: ProtocolResponse.User) {
         var file: FileState? = nil
         if let fileInfo = userData.file {
-            let duration = Double(fileInfo.duration)!
-            file = FileState(name: fileInfo.name, duration: duration, size: fileInfo.size)
+            file = FileState(name: fileInfo.name, duration: fileInfo.duration, size: fileInfo.size)
         }
         if let event = userData.event {
             switch (event) {
@@ -148,8 +147,7 @@ class SyncPlayHandler : ChannelInboundHandler {
         // Maybe not best approach to treat like a join
         var file: FileState? = nil
         if let fileInfo = userData.file {
-            let duration = Double(fileInfo.duration)!
-            file = FileState(name: fileInfo.name, duration: duration, size: fileInfo.size)
+            file = FileState(name: fileInfo.name, duration: fileInfo.duration, size: fileInfo.size)
         }
         DispatchQueue.main.async {
             let newUser = UserState(name: username, room: room, ready: userData.isReady, file: file)

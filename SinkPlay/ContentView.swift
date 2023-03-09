@@ -45,15 +45,22 @@ struct ContentView: View {
             if showInspector {
                 // TODO: Make full-height
                 VStack {
-                    Text("Users:")
-                    List(appState.users) { user in
-                        Text(user.name)
+                    Table(appState.users) {
+                        TableColumn("Username", value: \.name)
+                        TableColumn("Room", value: \.room!)
+                        TableColumn("Ready") { value in
+                            Text(value.ready ? "Ready" : "Not ready")
+                        }
+                        TableColumn("File") { value in
+                            Text(value.file?.name ?? "(no file)")
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .toolbar {
+            // TODO: Make sure these exist in the menu bar too
             Button(action: { showInspector.toggle() }) {
                 Label("Toggle Inspector", systemImage: "sidebar.right")
             }

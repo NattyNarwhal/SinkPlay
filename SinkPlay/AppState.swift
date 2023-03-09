@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import NIO
 
-class FileState : ObservableObject {
+class FileState : ObservableObject, CustomStringConvertible {
     @Published var name: String
     @Published var duration: TimeInterval
     @Published var size: UInt64
@@ -19,9 +19,13 @@ class FileState : ObservableObject {
         self.duration = duration
         self.size = size
     }
+    
+    public var description: String {
+        "\(name) (\(duration) seconds, \(size) bytes)"
+    }
 }
 
-class UserState : ObservableObject, Identifiable {
+class UserState : ObservableObject, Identifiable, CustomStringConvertible {
     let id = UUID()
     
     @Published var name: String
@@ -35,6 +39,10 @@ class UserState : ObservableObject, Identifiable {
         self.room = room
         self.ready = ready
         self.file = file
+    }
+    
+    public var description: String {
+        "\(name) in room \(room) is ready (\(ready)) watching \(file)"
     }
 }
 
@@ -117,6 +125,7 @@ class AppState : ObservableObject {
         users.first { user in
             user.name == username
         }?.ready = ready
+        objectWillChange.send()
     }
     
     func userJoined(newUser: UserState) {
@@ -124,23 +133,27 @@ class AppState : ObservableObject {
             user.name == newUser.name
         })
         users.append(newUser)
+        objectWillChange.send()
     }
     
     func userLeft(username: String) {
         users.removeAll(where: { user in
             user.name == username
         })
+        objectWillChange.send()
     }
     
     func userChangedFile(username: String, file: FileState) {
         users.first { user in
             user.name == username
         }?.file = file
+        objectWillChange.send()
     }
     
     func userChangedRoom(username: String, room: String) {
         users.first { user in
             user.name == username
         }?.room = room
+        objectWillChange.send()
     }
 }
