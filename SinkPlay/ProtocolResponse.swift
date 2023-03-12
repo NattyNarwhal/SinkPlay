@@ -116,8 +116,8 @@ enum ProtocolResponse: Codable {
     struct File: Codable {
         // some of these are optionals...
         let name: String
-        let duration: Double
-        let size: UInt64
+        let duration: Double?
+        let size: UInt64?
         
         enum CodingKeys: String, CodingKey {
             case name, duration, size
@@ -126,13 +126,13 @@ enum ProtocolResponse: Codable {
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.name = try container.decode(String.self, forKey: .name)
-            self.size = try container.decode(UInt64.self, forKey: .size)
+            self.size = try? container.decode(UInt64.self, forKey: .size)
             if let durationString = try? container.decode(String.self, forKey: .duration) {
                 self.duration = Double(durationString) ?? 0
             } else if let duration = try? container.decode(Double.self, forKey: .duration) {
                 self.duration = duration
             } else {
-                throw DecodingError.typeMismatch(File.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for File.duration"))
+                self.duration = nil
             }
         }
     }

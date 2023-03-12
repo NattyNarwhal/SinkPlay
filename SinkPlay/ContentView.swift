@@ -8,6 +8,12 @@
 import SwiftUI
 import AVKit
 
+enum RightSidebarMode {
+    case none
+    case userList
+    case chat
+}
+
 struct ContentView: View {
     @ObservedObject var appState: AppState
     
@@ -25,7 +31,9 @@ struct ContentView: View {
     @State var player = AVPlayer()
     
     // For chat and users
-    @State var showInspector = false
+    @State var rightSideBar: RightSidebarMode = .none
+    
+    @State var messageToSend: String = ""
     
     var body: some View {
         HSplitView {
@@ -33,6 +41,14 @@ struct ContentView: View {
                 .onReceive(appState.$currentURL) { (newUrl) in
                     if let url = newUrl {
                         let item = AVPlayerItem(url: url)
+                        var size: UInt64? = nil
+                        let path = url.path
+                        if let attr = try? FileManager().attributesOfItem(atPath: path) {
+                            size = attr[FileAttributeKey.size] as? UInt64
+                        }
+                        // https://stackoverflow.com/questions/23874574/avplayer-item-get-a-nan-duration
+                        let duration = item.asset.duration.seconds
+                        appState.notifyFile(name: url.lastPathComponent, duration: duration, size: size)
                         player.replaceCurrentItem(with: item)
                     }
                 }
@@ -42,7 +58,7 @@ struct ContentView: View {
                 .onDisappear {
                     uninstallObservers()
                 }
-            if showInspector {
+            if rightSideBar == .userList {
                 // TODO: Make full-height
                 VStack {
                     Table(appState.users) {
@@ -57,12 +73,35 @@ struct ContentView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if rightSideBar == .chat {
+                VStack {
+                    ScrollView {
+                        // TODO: Very much the wrong way to show messages for now
+                        ForEach(appState.messages) { message in
+                            Text("[\(message.when)] \(message.username): \(message.message)")
+                                .textSelection(.enabled)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    HStack {
+                        TextField("Message", text: $messageToSend)
+                        Button("Send") {
+                            appState.sendChat(message: messageToSend)
+                            messageToSend = ""
+                            // TODO: Put focus back on the text field
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .toolbar {
             // TODO: Make sure these exist in the menu bar too
-            Button(action: { showInspector.toggle() }) {
-                Label("Toggle Inspector", systemImage: "sidebar.right")
+            Button(action: { rightSideBar = (rightSideBar == .userList ? .none : .userList) }) {
+                Label("Toggle Users", systemImage: "person")
+            }
+            Button(action: { rightSideBar = (rightSideBar == .chat ? .none : .chat) }) {
+                Label("Toggle Chat", systemImage: "bubble.left.and.bubble.right")
             }
         }
         //.edgesIgnoringSafeArea(.all)

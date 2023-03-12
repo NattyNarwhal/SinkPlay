@@ -58,7 +58,7 @@ class SyncPlayHandler : ChannelInboundHandler {
         let readyMessage = [
             "Set": [
                 "ready": [
-                    "isReady": false, // TODO: from appState
+                    "isReady": appState.isReady, // TODO: from appState
                     "manuallyInitiated": false
                 ]
             ]
@@ -186,8 +186,17 @@ class SyncPlayHandler : ChannelInboundHandler {
             "clientLatencyCalculation": ourClientLatencyCalculation,
             "clientRtt": 0
         ]
+        if let doSeek = playstate.doSeek, doSeek {
+            
+        }
         // Write a state packet back, so the connection stays alive
         writeDictionary(dict: ["State": replyState], context: context)
+    }
+    
+    private func handleMessageChat(chat: ProtocolResponse.Chat) {
+        DispatchQueue.main.async {
+            self.appState.receiveMessage(username: chat.username, message: chat.message)
+        }
     }
     
     private func handleJsonPayload(data: Data, context: ChannelHandlerContext) {
@@ -198,8 +207,7 @@ class SyncPlayHandler : ChannelInboundHandler {
                 // TODO: Display it
                 print("SyncPlay Protocol Error: ", message)
             case .chat(let chat):
-                // TODO: Show in UI
-                print(chat.username, " said ", chat.message)
+                handleMessageChat(chat: chat)
             case .set(let set):
                 if let user = set.user {
                     handleMessageSetUsers(users: user)
